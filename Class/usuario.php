@@ -47,12 +47,7 @@ class Usuario{
         ));
 
         if(count($results) > 0){
-            $row = $results[0];
-
-            $this->setIDUsuario($row['id']);
-            $this->setLoginUsuario($row['deslogin']);
-            $this->setSenhaUsuario($row['dessenha']);
-            $this->setDtCadastro(new DateTime($row['dt_cadastro']));
+            $this->setData($results[0]);
         }
     }
 
@@ -78,16 +73,49 @@ class Usuario{
             ":PASSWORD"=>$password
         ));
 
-        if(count($results) > 0){
-            $row = $results[0];
-
-            $this->setIDUsuario($row['id']);
-            $this->setLoginUsuario($row['deslogin']);
-            $this->setSenhaUsuario($row['dessenha']);
-            $this->setDtCadastro(new DateTime($row['dt_cadastro']));
+        if(count($results) > 0){        
+            $this->setData($results[0]);
         }else{
             throw new Exception("Login e/ou senha inválidos!");
         }
+    }
+
+    public function setData($data){
+        $this->setIDUsuario($data['id']);
+        $this->setLoginUsuario($data['deslogin']);
+        $this->setSenhaUsuario($data['dessenha']);
+        $this->setDtCadastro(new DateTime($data['dt_cadastro']));
+    }
+
+    public function insert(){
+        $sql = new SQL();
+
+        $results = $sql->select("CALL sp_usuarios_insert(:LOGIN, :PASSWORD)", array(
+            ":LOGIN"=>$this->getLoginUsuario(),
+            ":PASSWORD"=>$this->getSenhaUsuario()
+        ));
+
+        if(count($results) > 0){
+            $this->setData($results[0]);
+        }
+    }
+
+    public function update($login, $password){
+        $this->setLoginUsuario($login);
+        $this->setSenhaUsuario($password);
+
+        $sql = new SQL();
+
+        $sql->query("UPDATE tb_usuarios SET deslogin = :LOGIN, dessenha = :PASSWORD WHERE id = :ID", array(
+            ':LOGIN'=>$this->getLoginUsuario(),
+            ':PASSWORD'=>$this->getSenhaUsuario(),
+            ':ID'=>$this->getIDUsuario()
+        ));
+    }
+
+    public function __construct($login = "", $password = ""){
+        $this->setLoginUsuario($login);
+        $this->setSenhaUsuario($password);
     }
 
     public function __toString(){
